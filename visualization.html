@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <script src="https://cdn.jsdelivr.net/npm/vega@6.2.0"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vega-lite@6.1.0"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vega-embed@7.0.2"></script>
+</head>
+<body>
+  <div id="vis"/>
+  <script>
+    const spec = {
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "title": "Malaysia WMO Stations — Average/Max Temperature (2025-09-30)",
+  "width": 600,
+  "height": 500,
+  "projection": {"type": "mercator", "center": [109, 4.5], "scale": 1600},
+  "layer": [
+    {
+      "data": {"graticule": {"step": [5, 5]}},
+      "mark": {
+        "type": "geoshape",
+        "stroke": "#cbcbcb",
+        "strokeDash": [2, 2],
+        "strokeWidth": 0.6,
+        "opacity": 1,
+        "clip": true
+      }
+    },
+    {
+      "data": {"sphere": true},
+      "mark": {
+        "type": "geoshape",
+        "fill": "#e6f2ff",
+        "stroke": null,
+        "clip": true
+      }
+    },
+    {
+      "data": {
+        "url": "https://raw.githubusercontent.com/ZhuYaci/FIT3179Week9/refs/heads/main/ne_10m_admin_1_states_provinces.json",
+        "format": {
+          "type": "topojson",
+          "feature": "ne_10m_admin_1_states_provinces"
+        }
+      },
+      "transform": [{"filter": "datum.properties.admin == 'Malaysia'"}],
+      "mark": {
+        "type": "geoshape",
+        "fill": "#f6f0d7",
+        "stroke": "#868282",
+        "clip": true
+      }
+    },
+    {
+      "data": {
+        "url": "https://raw.githubusercontent.com/ZhuYaci/FIT3179Week9/refs/heads/main/wmo_malaysia_2025-09-30.csv",
+        "format": {
+          "type": "csv",
+          "parse": {
+            "lat": "number",
+            "lon": "number",
+            "temp_max": "number",
+            "temp_min": "number"
+          }
+        }
+      },
+      "transform": [
+        {"calculate": "(datum.temp_max + datum.temp_min) / 2", "as": "temp_avg"}
+      ],
+      "mark": {"type": "circle", "opacity": 0.9},
+      "encoding": {
+        "longitude": {"field": "lon", "type": "quantitative"},
+        "latitude": {"field": "lat", "type": "quantitative"},
+        "size": {
+          "field": "temp_max",
+          "type": "quantitative",
+          "title": "Max Temp (°C)",
+          "scale": {"domain": [20, 36], "range": [8, 800]}
+        },
+        "color": {
+          "field": "temp_avg",
+          "type": "quantitative",
+          "title": "Avg Temp (°C)",
+          "scale": {
+            "scheme": "redblue",
+            "reverse": true,
+            "domain": [18, 30],
+            "nice": false
+          }
+        },
+        "tooltip": [
+          {"field": "city", "title": "City"},
+          {"field": "temp_max", "title": "Max Temp (°C)"},
+          {"field": "temp_min", "title": "Min Temp (°C)"},
+          {"field": "temp_avg", "title": "Avg Temp(°C)", "format": ".1f"},
+          {"field": "date", "title": "Date"},
+          {"field": "lat"},
+          {"field": "lon"},
+          {"field": "source_id", "title": "Source ID"}
+        ]
+      }
+    }
+  ],
+  "config": {
+    "legend": {"labelFontSize": 12, "titleFontSize": 12},
+    "view": {"stroke": null}
+  }
+};
+    vegaEmbed("#vis", spec, {mode: "vega-lite"}).then(console.log).catch(console.warn);
+  </script>
+</body>
+</html>
